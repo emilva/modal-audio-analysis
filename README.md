@@ -1,5 +1,7 @@
 # Modal Audio Analysis
 
+*Note from the author: Do not use this for pirated music. Please purchase music from [Bandcamp](https://bandcamp.com), [Beatport](https://beatport.com), or other sites. There are starving musicians out there!*
+
 GPU-accelerated audio analysis using [Modal](https://modal.com). Extract BPM, beats, key, stems, genre, mood, and more from audio files.
 
 ## Features
