@@ -62,7 +62,7 @@ def analyze_ml_features(audio_path: str, return_embeddings: bool = True) -> dict
     image=pytorch_image,
     timeout=1200,
 )
-def analyze(audio_bytes: bytes, filename: str) -> dict:
+def analyze(audio_bytes: bytes, filename: str, separate_stems: bool = True) -> dict:
     """
     Full analysis pipeline: chains Stage 1 (PyTorch) and Stage 2 (TensorFlow).
 
@@ -82,7 +82,7 @@ def analyze(audio_bytes: bytes, filename: str) -> dict:
 
     # Stage 1: Structure analysis
     print("=== STAGE 1: PyTorch Analysis (demucs, allin1) ===")
-    structure_result = analyze_structure.remote(audio_bytes, filename, convert_stems=True)
+    structure_result = analyze_structure.remote(audio_bytes, filename, convert_stems=separate_stems)
 
     if "error" in structure_result:
         return {

@@ -48,7 +48,7 @@ def analyze(audio_file: str, output_dir: str, no_stems: bool, json_only: bool):
 
     console.print("[dim]Running Modal GPU pipeline...[/dim]")
     with app.run():
-        result = modal_analyze.remote(audio_bytes, audio_path.name)
+        result = modal_analyze.remote(audio_bytes, audio_path.name, separate_stems=not no_stems)
 
     if "error" in result:
         console.print(f"[bold red]Error:[/bold red] {result['error']}")
