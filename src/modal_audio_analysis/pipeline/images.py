@@ -35,6 +35,7 @@ pytorch_image = (
         "madmom @ git+https://github.com/CPJKU/madmom.git",
         "essentia",
         "audioread",
+        "pydantic",
     )
     .add_local_file(
         str(Path(__file__).parent / "patch_allin1.py"),
@@ -42,6 +43,7 @@ pytorch_image = (
         copy=True,
     )
     .run_commands("python3 /root/patch_allin1.py")
+    .add_local_python_source("modal_audio_analysis")
 )
 
 # =============================================================================
@@ -57,6 +59,8 @@ tensorflow_image = (
         "numpy<2",
         "nvidia-cuda-runtime-cu11==11.8.89",
         "nvidia-curand-cu11==10.3.0.86",
+        "nvidia-cuda-nvrtc-cu11==11.8.89",
+        "pydantic",
     )
     .env(
         {
@@ -69,10 +73,16 @@ tensorflow_image = (
                 "/usr/local/lib/python3.10/site-packages/nvidia/cusparse/lib:"
                 "/usr/local/lib/python3.10/site-packages/nvidia/cuda_runtime/lib:"
                 "/usr/local/lib/python3.10/site-packages/nvidia/nccl/lib:"
-                "/usr/local/lib/python3.10/site-packages/nvidia/cuda_cupti/lib"
+                "/usr/local/lib/python3.10/site-packages/nvidia/cuda_cupti/lib:"
+                "/usr/local/lib/python3.10/site-packages/nvidia/cuda_nvrtc/lib"
             ),
             "TF_FORCE_GPU_ALLOW_GROWTH": "true",
         }
+    )
+    .run_commands(
+        # Create symlink for libnvrtc.so (cuDNN expects unversioned name)
+        "ln -sf /usr/local/lib/python3.10/site-packages/nvidia/cuda_nvrtc/lib/libnvrtc.so.11.2 "
+        "/usr/local/lib/python3.10/site-packages/nvidia/cuda_nvrtc/lib/libnvrtc.so",
     )
     .run_commands(
         "mkdir -p /models/essentia",
@@ -116,4 +126,5 @@ tensorflow_image = (
         "https://essentia.upf.edu/models/classification-heads/mtg_jamendo_instrument/"
         "mtg_jamendo_instrument-discogs-effnet-1.json",
     )
+    .add_local_python_source("modal_audio_analysis")
 )
