@@ -54,10 +54,11 @@ def analyze(audio_file: str, output_dir: str, no_stems: bool, json_only: bool):
         console.print(f"[bold red]Error:[/bold red] {result['error']}")
         return
 
-    os.makedirs(output_dir, exist_ok=True)
+    track_dir = os.path.join(output_dir, audio_path.stem)
+    os.makedirs(track_dir, exist_ok=True)
 
     # Save analysis JSON
-    analysis_path = os.path.join(output_dir, "analysis.json")
+    analysis_path = os.path.join(track_dir, "analysis.json")
     with open(analysis_path, "w") as f:
         json.dump(result["analysis"], f, indent=2)
     console.print(f"[green]Saved:[/green] {analysis_path}")
@@ -65,7 +66,7 @@ def analyze(audio_file: str, output_dir: str, no_stems: bool, json_only: bool):
     if not json_only:
         # Save embeddings
         if result.get("embeddings_bytes"):
-            embeddings_path = os.path.join(output_dir, "embeddings.npy")
+            embeddings_path = os.path.join(track_dir, "embeddings.npy")
             with open(embeddings_path, "wb") as f:
                 f.write(result["embeddings_bytes"])
             embeddings = np.load(embeddings_path)
@@ -74,7 +75,7 @@ def analyze(audio_file: str, output_dir: str, no_stems: bool, json_only: bool):
         # Save stems
         stems_bytes = result.get("stems_bytes", {})
         if stems_bytes and not no_stems:
-            stems_dir = os.path.join(output_dir, "stems")
+            stems_dir = os.path.join(track_dir, "stems")
             os.makedirs(stems_dir, exist_ok=True)
             for stem_name, stem_data in stems_bytes.items():
                 stem_path = os.path.join(stems_dir, f"{stem_name}.mp3")
@@ -253,7 +254,8 @@ def _collect_audio_files(paths: tuple) -> list[Path]:
 @click.argument("audio_files", nargs=-1, type=click.Path(exists=True))
 @click.option("--output-dir", "-o", default="./batch_output", help="Output directory")
 @click.option("--concurrency", "-j", default=5, help="Max concurrent analyses")
-def batch(audio_files: tuple, output_dir: str, concurrency: int):
+@click.option("--no-stems", is_flag=True, help="Skip stem separation")
+def batch(audio_files: tuple, output_dir: str, concurrency: int, no_stems: bool):
     """
     Analyze multiple audio files in parallel.
 
@@ -290,7 +292,7 @@ def batch(audio_files: tuple, output_dir: str, concurrency: int):
     for audio_path in collected_files:
         with open(audio_path, "rb") as f:
             audio_bytes = f.read()
-        inputs.append((audio_bytes, audio_path.name))
+        inputs.append((audio_bytes, audio_path.name, not no_stems))
 
     os.makedirs(output_dir, exist_ok=True)
 
